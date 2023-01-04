@@ -1,20 +1,15 @@
-/*********
-  Rui Santos
-  Complete project details at https://randomnerdtutorials.com  
-*********/
-
 #include <Arduino.h>
 #include <WiFi.h>
 #include <PubSubClient.h>
 #include <Wire.h>
 
 // Replace the next variables with your SSID/Password combination
-const char* ssid = "KAI CACTUS";
-const char* password = "smpID4778";
+const char* ssid = "";
+const char* password = "";
 
 // Add your MQTT Broker IP address, example:
-//const char* mqtt_server = "192.168.1.144";
-const char* mqtt_server = "localhost";
+// const char* mqtt_server = "192.168.100.87";
+const char* mqtt_server = "";
 
 WiFiClient espClient;
 PubSubClient client(espClient);
@@ -59,14 +54,16 @@ void callback(char* topic, byte* message, unsigned int length) {
     messageTemp += (char)message[i];
   }
   Serial.println();
-
+  Serial.println("command: " + messageTemp);
   // Feel free to add more if statements to control more GPIOs with MQTT
 
   // If a message is received on the topic esp32/output, you check if the message is either "on" or "off". 
   // Changes the output state according to the message
-  if (String(topic) == "esp32/output") {
+  if (String(topic) == "api/control/startWsm") {
     Serial.print("Changing output to ");
-    if(messageTemp == "on"){
+    Serial.println(messageTemp);
+    if (messageTemp == "on")
+    {
       Serial.println("on");
       digitalWrite(ledPin, HIGH);
     }
@@ -85,7 +82,8 @@ void reconnect() {
     if (client.connect("ESP8266Client")) {
       Serial.println("connected");
       // Subscribe
-      client.subscribe("esp32/output");
+      client.subscribe("api/connectionStatus");
+      client.subscribe("api/control/startWsm");
     } else {
       Serial.print("failed, rc=");
       Serial.print(client.state());
@@ -99,7 +97,7 @@ void reconnect() {
 void setup() {
   Serial.begin(9600);
   setup_wifi();
-  client.setServer(mqtt_server, 5000);
+  client.setServer(mqtt_server, 1883);
   client.setCallback(callback);
 
   pinMode(ledPin, OUTPUT);
